@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <title>Studio · ChatGPT 风格界面参考</title>
+  <script>
+    try { const t = localStorage.getItem('cg-reference-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch {}
+  </script>
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="primitives.css">
+  <style>
+    html, body { margin: 0; height: 100%; background: var(--cg-canvas); }
+    .reference { height: 100vh; height: 100dvh; display: flex; flex-direction: column; }
+    .desktop-strip { display: none; height: 32px; flex-shrink: 0; align-items: center; padding: 0 16px; color: var(--cg-muted); background: var(--cg-sidebar); font-size: 12px; -webkit-app-region: drag; }
+    .reference[data-platform="desktop"] .desktop-strip { display: flex; }
+    .shell { display: flex; flex: 1; min-height: 0; }
+    .sidebar { width: var(--cg-sidebar-width); flex-shrink: 0; background: var(--cg-sidebar); display: flex; flex-direction: column; padding: 12px; }
+    .sidebar-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; min-height: 36px; padding-left: 10px; }
+    .wordmark { font-size: 19px; font-weight: 600; letter-spacing: -.4px; }
+    .nav { display: grid; gap: 3px; }
+    .history { flex: 1; min-height: 0; overflow-y: auto; margin-top: 28px; }
+    .history-heading { font-size: 12px; font-weight: 500; color: var(--cg-muted); padding: 0 10px; margin-bottom: 8px; }
+    .sidebar-bottom { margin-top: 12px; padding-top: 10px; }
+    .avatar { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--cg-action); color: var(--cg-on-action); font-size: 12px; font-weight: 600; }
+    .account { display: flex; gap: 10px; align-items: center; padding: 8px 10px; color: var(--cg-text); }
+    .account-copy { flex: 1; min-width: 0; }
+    .account-copy small { display: block; color: var(--cg-muted); font-size: 12px; }
+    .main { min-width: 0; min-height: 0; flex: 1; display: flex; flex-direction: column; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; min-height: var(--cg-topbar-height); padding: 8px 24px; gap: 16px; }
+    .topbar-left, .topbar-right { display: flex; gap: 12px; align-items: center; min-width: 0; }
+    .topbar-title { font-size: 17px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .demo-label { color: var(--cg-muted); font-size: 12px; }
+    .stage { flex: 1; min-height: 0; display: flex; flex-direction: column; position: relative; }
+    .transcript { flex: 1; min-height: 0; overflow-y: auto; padding: 36px 32px 24px; }
+    .reading { width: 100%; max-width: var(--cg-reading-width); margin: 0 auto; }
+    .message + .message { margin-top: 32px; }
+    .message--user { display: flex; justify-content: flex-end; }
+    .bubble { max-width: 80%; padding: 12px 20px; border-radius: 24px; background: var(--cg-surface); font-size: 16px; line-height: 1.6; overflow-wrap: anywhere; white-space: pre-wrap; }
+    .assistant-actions { display: flex; margin-top: 14px; gap: 2px; color: var(--cg-secondary); }
+    .assistant-actions .cg-btn { color: inherit; }
+    .message-files { font-size: 13px; color: var(--cg-secondary); margin-bottom: 8px; }
+    .composer-dock { padding: 14px 32px max(14px, env(safe-area-inset-bottom)); }
+    .composer { background: var(--cg-surface); border-radius: var(--cg-radius-composer); padding: 12px; box-shadow: var(--cg-shadow-input); }
+    .composer:focus-within { outline: 2px solid var(--cg-focus); outline-offset: 3px; }
+    .composer textarea { display: block; width: 100%; min-height: 32px; max-height: 208px; margin: 0; padding: 6px 8px 10px; border: 0; resize: none; background: transparent; font-size: 16px; line-height: 26px; outline: none; overflow-y: auto; }
+    .composer textarea:focus-visible { outline: none; }
+    .composer-tools { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 4px; }
+    .composer-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .composer-model { font-size: 13px; color: var(--cg-secondary); }
+    .composer-note { text-align: center; margin-top: 10px; font-size: 12px; color: var(--cg-muted); }
+    .attachments { display: flex; flex-wrap: wrap; gap: 8px; }
+    .attachment { display: flex; align-items: center; gap: 6px; max-width: 100%; border: 1px solid var(--cg-border); border-radius: 10px; padding: 4px 6px 4px 10px; font-size: 13px; }
+    .attachment-name { white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+    .welcome { text-align: center; padding-bottom: 28px; }
+    .welcome h1 { font-size: var(--cg-text-welcome); font-weight: 500; }
+    .main[data-view="home"] .stage { justify-content: center; padding-bottom: 12vh; }
+    .main[data-view="home"] .transcript { flex: 0 0 auto; padding-top: 0; padding-bottom: 0; overflow: visible; }
+    .main[data-view="home"] .composer-dock { padding-top: 0; }
+    .main[data-view="tasks"] .composer-dock { display: none; }
+    .main[data-view="tasks"] .reading { max-width: 960px; }
+    .task-header { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 28px; }
+    .task-header p { color: var(--cg-muted); margin-top: 6px; }
+    .task-row { display: flex; align-items: center; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--cg-border); }
+    .task-row > .cg-icon { color: var(--cg-secondary); }
+    .task-copy { flex: 1; min-width: 0; }
+    .task-title { font-weight: 500; overflow-wrap: anywhere; }
+    .task-copy p { margin-top: 4px; font-size: 13px; color: var(--cg-muted); }
+    .jump-latest { position: absolute; right: 24px; bottom: 172px; box-shadow: var(--cg-shadow-input); background: var(--cg-overlay) !important; border-color: var(--cg-border) !important; }
+    .scrim { display: none; }
+    .shell.sidebar-collapsed .sidebar { display: none; }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); padding: 10px 16px; border-radius: 10px; background: var(--cg-action); color: var(--cg-on-action); z-index: 10; max-width: calc(100vw - 32px); text-align: center; box-shadow: var(--cg-shadow); }
+    .search-results { margin-top: 16px; display: grid; gap: 4px; }
+    .dialog-form { display: grid; gap: 20px; }
+    .dialog-actions { display: flex; gap: 8px; justify-content: flex-end; }
+    @media (min-width: 1024px) { .sidebar-open { display: none !important; } .shell.sidebar-collapsed .sidebar-open { display: inline-flex !important; } }
+    @media (max-width: 1023px) {
+      .sidebar { display: none; }
+      .shell.drawer-open .sidebar { display: flex; position: fixed; inset: 0 auto 0 0; width: min(280px, 85vw); z-index: 5; box-shadow: var(--cg-shadow); }
+      .shell.drawer-open .scrim { display: block; position: fixed; inset: 0; background: var(--cg-scrim); z-index: 4; }
+    }
+    @media (max-width: 639px) {
+      .topbar { padding: 8px 12px; gap: 8px; }
+      .topbar-left { gap: 8px; }
+      .topbar-right { gap: 4px; }
+      .demo-label { font-size: 11px; }
+      .transcript { padding: 24px 20px; }
+      .composer-dock { padding: 12px 16px max(12px, env(safe-area-inset-bottom)); }
+      .bubble { max-width: 90%; padding: 12px 16px; }
+      .welcome h1 { font-size: 28px; }
+      .task-header { align-items: flex-start; }
+      .task-header h1 { font-size: 22px; }
+      .task-row { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; gap: 8px 12px; }
+      .task-row > .cg-icon { grid-column: 1; grid-row: 1; align-self: start; margin-top: 3px; }
+      .task-copy { grid-column: 2 / -1; }
+      .task-row .cg-badge { grid-column: 2; justify-self: start; margin: 0; }
+      .task-row .cg-btn { grid-column: 3; margin: 0; }
+      .composer-model { font-size: 12px; }
+      .composer-note { font-size: 11px; }
+      .jump-latest { right: 16px; bottom: 180px; }
+      .main[data-view="home"] .stage { padding-bottom: 8vh; }
+    }
+  </style>
+</head>
+<body>
+<div class="cg-app reference" id="app">
+  <div class="desktop-strip">Studio</div>
+  <div class="shell" id="shell">
+    <div class="scrim" id="scrim" aria-hidden="true"></div>
+    <aside class="sidebar" id="sidebar" aria-label="主导航">
+      <div class="sidebar-top"><span class="wordmark">Studio</span><button class="cg-btn cg-btn--icon" id="sidebar-close" aria-label="收起侧栏" title="收起侧栏"></button></div>
+      <nav class="nav">
+        <button class="cg-nav-item" id="new-chat"><span data-icon="new-chat"></span><span>新对话</span></button>
+        <button class="cg-nav-item" id="search-open"><span data-icon="search"></span><span>搜索对话</span></button>
+        <button class="cg-nav-item" id="tasks-open"><span data-icon="folder"></span><span>任务</span></button>
+      </nav>
+      <div class="history"><div class="history-heading">最近对话</div><div id="history-list"></div></div>
+      <div class="sidebar-bottom">
+        <button class="cg-nav-item" id="settings-open"><span data-icon="settings"></span><span>设置</span></button>
+        <div class="account"><span class="avatar" aria-hidden="true">S</span><div class="account-copy">我的工作区<small>个人空间</small></div></div>
+      </div>
+    </aside>
+    <main class="main" id="main" data-view="chat">
+      <header class="topbar">
+        <div class="topbar-left"><button class="cg-btn cg-btn--icon sidebar-open" id="sidebar-open" aria-label="打开侧栏" title="打开侧栏"></button><span class="topbar-title" id="page-title">Studio</span></div>
+        <div class="topbar-right"><span class="demo-label">本地演示</span><button class="cg-btn cg-btn--icon" id="theme-toggle" aria-label="切换到深色" title="切换到深色"></button></div>
+      </header>
+      <div class="stage">
+        <div class="transcript" id="transcript" tabindex="0" aria-label="对话内容"><div class="reading" id="content"></div></div>
+        <button class="cg-btn cg-btn--icon cg-btn--round jump-latest" id="jump-latest" aria-label="回到最新消息" title="回到最新消息" hidden></button>
+        <div class="composer-dock">
+          <form class="composer reading" id="composer">
+            <div class="attachments" id="attachments"></div>
+            <label class="cg-sr-only" for="prompt">消息</label><textarea id="prompt" rows="1" placeholder="有什么可以帮忙的？"></textarea>
+            <div class="composer-tools"><div class="composer-left"><button class="cg-btn cg-btn--icon cg-btn--round" type="button" id="attach" aria-label="添加附件" title="添加附件"></button><span class="composer-model">本地演示助手</span></div><button class="cg-btn cg-btn--primary cg-btn--icon cg-btn--round" id="send" type="submit" aria-label="发送消息" title="发送消息" disabled></button></div>
+          </form>
+          <p class="composer-note">演示回复仅用于预览界面。</p>
+        </div>
+      </div>
+    </main>
+  </div>
+  <input type="file" id="file-input" multiple hidden>
+  <dialog class="cg-dialog" id="settings-dialog" aria-labelledby="settings-title">
+    <div class="cg-dialog-header"><h2 id="settings-title">设置</h2><button class="cg-btn cg-btn--icon" data-close aria-label="关闭设置"></button></div>
+    <div class="cg-setting-row"><div class="cg-setting-copy"><span>外观</span><p>选择适合当前环境的主题。</p></div><label class="cg-sr-only" for="theme-select">外观</label><select class="cg-select" id="theme-select"><option value="system">跟随系统</option><option value="light">浅色</option><option value="dark">深色</option></select></div>
+    <div class="cg-setting-row"><div class="cg-setting-copy"><span>发送方式</span><p>中文输入法选字时不会发送。</p></div><label class="cg-sr-only" for="send-select">发送方式</label><select class="cg-select" id="send-select"><option value="enter">Enter 发送</option><option value="mod">Ctrl / Cmd + Enter</option></select></div>
+  </dialog>
+  <dialog class="cg-dialog" id="search-dialog" aria-labelledby="search-title"><div class="cg-dialog-header"><h2 id="search-title">搜索对话</h2><button class="cg-btn cg-btn--icon" data-close aria-label="关闭搜索"></button></div><label class="cg-sr-only" for="search-input">搜索关键词</label><input class="cg-input" id="search-input" placeholder="搜索最近对话" type="search"><div class="search-results" id="search-results"></div></dialog>
+  <dialog class="cg-dialog" id="task-dialog" aria-labelledby="task-title"><div class="cg-dialog-header"><h2 id="task-title">新建任务</h2><button class="cg-btn cg-btn--icon" data-close aria-label="关闭新建任务"></button></div><form class="dialog-form" id="task-form"><div class="cg-field"><label for="task-name">任务名称</label><input class="cg-input" id="task-name" required maxlength="140" placeholder="例如：整理版本发布清单"></div><div class="dialog-actions"><button type="button" class="cg-btn cg-btn--secondary" data-close>取消</button><button class="cg-btn cg-btn--primary" type="submit">创建任务</button></div></form></dialog>
+  <div class="toast" id="toast" role="status" hidden></div>
+  <div class="cg-sr-only" id="run-status" role="status" aria-live="polite"></div>
+</div>
+<script src="reference.js"></script>
+</body>
+</html>

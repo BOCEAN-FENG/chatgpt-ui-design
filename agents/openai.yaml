@@ -1,0 +1,13 @@
+interface:
+  display_name: ChatGPT 风格前端设计
+  short_description: 为网页与桌面软件建立克制、清晰的 ChatGPT 风格界面与组件规范
+  default_prompt: 使用 $chatgpt-ui-design 设计或改造当前软件界面，统一浅深色主题、字体、布局、按钮、图标和交互，并运行视觉检查。
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true
